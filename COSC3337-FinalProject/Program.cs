@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace COSC3337_FinalProject
 {
@@ -6,7 +7,10 @@ namespace COSC3337_FinalProject
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            BookRecords records = new BookRecords("records");
+            records.SaveChanges();
+            Console.ReadKey();
+
         }
     }
 }

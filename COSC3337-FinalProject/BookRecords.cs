@@ -1,58 +1,138 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace COSC3337_FinalProject
 {
     class BookRecords
     {
-        private string recFileLocation = "records.txt"; //stores records hashed by ISBN #
-        private string indecFileLocation = "index.txt"; //stores relative filelocations in rec file by title (alphabetical)
+        public const int tableSize = 1000;
 
-    }
+        private string recLoc;
+        private string isbnIndexLoc;
+        private string titleIndexLoc;
+        private string availLoc;
 
-    public class Record //50 chars long
-    {
-        public const int recordSize = 50;
-        public char[] author = new char[16];
-        public char[] title = new char[24];
-        public char[] isbn = new char[10];
+        //Indicies
+        FileIndex isbnIndex = new FileIndex();
+        FileIndex titleIndex = new FileIndex();
 
-        public Record(string author, string title, string isbn) //Create new record
+        //Record file stream
+        private FileStream recStream; //stores records by index
+
+        //Avail index List
+        private List<int> availList = new List<int>();
+
+        //Last used index(for getting empty record)
+        public int lastIndex = 0;
+
+        public BookRecords(string recordName)
         {
-            this.author = author.ToCharArray(0, 16);
-            this.title = title.ToCharArray(0, 24);
-            this.isbn = isbn.ToCharArray(0, 10);
+            //Get file names
+            recLoc = recordName + ".txt";
+            isbnIndexLoc = recordName + "-isbnIndex.txt";
+            titleIndexLoc = recordName + "-titleIndex.txt";
+            availLoc = recordName + "-avail.txt";
+            //Open Files
+            recStream = File.Open(recLoc, FileMode.OpenOrCreate);
+            //Load indicies
+            titleIndex.LoadIndexFromFile(titleIndexLoc);
+            isbnIndex.LoadIndexFromFile(isbnIndexLoc);
+            //Load avail List
+            LoadAvailList();
         }
 
-        public Record(string record) //Create record from string (from file)
+        public void SaveChanges()
         {
-            if (record.Length == recordSize)
+            isbnIndex.SaveIndexToFile(isbnIndexLoc);
+            titleIndex.SaveIndexToFile(titleIndexLoc);
+            SaveAvailList();
+        }
+
+        public void Add(Record record)
+        {
+            int index = 0; 
+            if (availList.Count > 0)
             {
-                this.author = record.ToCharArray(0, 16);
-                title = record.ToCharArray(16, 24);
-                isbn = record.ToCharArray(50, 10);
+                index = availList[0];
+                availList.RemoveAt(0);
             }
+            else 
+            {
+                index = lastIndex; //start from last index
+                while (RecordExists(index)) //Get empty index
+                {
+                    index++;
+                }
+            }
+
+            //Write Record
+            recStream.Seek(Record.recordSize * index, SeekOrigin.Begin);
+            byte[] data = Encoding.ASCII.GetBytes(record.ToString());
+            recStream.Write(data, 0, Record.recordSize);
+
+            //Add indicies
+            titleIndex.AddIndex(new Index(record.title.ToString(), index));
+            isbnIndex.AddIndex(new Index(record.isbn.ToString(), index));
         }
 
-        public override string ToString()
+        public bool RecordExists(int index)
         {
-            return author.ToString() + title.ToString() + isbn.ToString();
+            Record rec;
+            return GetRecord(index, out rec);
         }
 
-        public string PrintRecord()
+        public bool GetRecord(int index, out Record rec)
         {
-            return string.Format("ISBN: {0} Title: {1} Author: {2}", isbn.ToString(), title.ToString(), author.ToString());
+            recStream.Seek((Record.recordSize * index), SeekOrigin.Begin);
+            //StreamReader reader = new StreamReader(stream);
+
+            byte[] buffer = new byte[Record.recordSize];
+
+            int i = recStream.Read(buffer, 0, Record.recordSize);
+
+            if (i == 0)
+            {
+                rec = null;
+                return false;
+            }
+            string recStr = Encoding.ASCII.GetString(buffer);
+
+            if (Record.TryParse(recStr, out rec))
+            {
+                return true;
+            }
+
+            return false;
         }
 
-        public static int HashISBN(char[] isbn)
+        public void LoadAvailList()
         {
-            return (int.Parse(isbn.ToString())) % 1000;
+            try
+            {
+                availList = new List<int>();
+                string[] lines = File.ReadAllLines(availLoc);
+                foreach (string line in lines)
+                {
+                    availList.Add(int.Parse(line));
+                }
+            }
+            catch
+            {
+                Console.WriteLine("AVAIL list IO ERROR");
+            }
+            
         }
 
-        public int Hash()
+        public void SaveAvailList()
         {
-            return HashISBN(isbn);
+            string text = "";
+            foreach (int i in availList)
+            {
+                text += i + '\n';
+            }
+            File.WriteAllText(availLoc, text);
         }
     }
 }
