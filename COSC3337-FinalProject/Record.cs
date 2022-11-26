@@ -7,24 +7,24 @@ namespace COSC3337_FinalProject
     public class Record //50 chars long
     {
         public const int recordSize = 50;
-        public char[] author = new char[16];
-        public char[] title = new char[24];
-        public char[] isbn = new char[10];
+        public string author;
+        public string title;
+        public string isbn;
 
         public Record(string author, string title, string isbn) //Create new record
         {
-            this.author = author.ToCharArray(0, 16);
-            this.title = title.ToCharArray(0, 24);
-            this.isbn = isbn.ToCharArray(0, 10);
+            this.author = author.PadRight(16).Substring(0,16);
+            this.title = title.PadRight(24).Substring(0, 24);
+            this.isbn = isbn.PadLeft(10,'0').Substring(0, 10);
         }
 
         public Record(string record) //Create record from string (from file)
         {
             if (record.Length == recordSize)
             {
-                this.author = record.ToCharArray(0, 16);
-                title = record.ToCharArray(16, 24);
-                isbn = record.ToCharArray(50, 10);
+                author = record.PadRight(16).Substring(0, 16);
+                title = record.PadRight(24).Substring(16, 24);
+                isbn = record.PadRight(10).Substring(40, 10);
             }
         }
 

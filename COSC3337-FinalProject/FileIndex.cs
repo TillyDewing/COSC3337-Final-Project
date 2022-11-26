@@ -4,7 +4,7 @@ using System.IO;
 
 namespace COSC3337_FinalProject
 {
-    public class FileIndex //30 Chars long Records : Stores a reference to BookRecords by title.
+    public class FileIndex //Sorted list of keys and index used to refrence index in master record file.
     {
         private List<Index> recordIndices = new List<Index>();
 
@@ -40,7 +40,7 @@ namespace COSC3337_FinalProject
             File.WriteAllText(fileLoc, recordText);
         }
 
-        public int Search(string title) //Returns index in records file if found
+        public int Search(string key) //Returns index in records file if found (returns -1 if not found)
         {
             int low = 0, high = recordIndices.Count - 1;
 
@@ -48,7 +48,7 @@ namespace COSC3337_FinalProject
             {
                 int mid = (low + high) / 2;
 
-                switch (string.Compare(recordIndices[mid].key, title))
+                switch (string.Compare(recordIndices[mid].key, key))
                 {
                     case -1: //<
                         low = mid + 1;
