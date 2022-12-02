@@ -5,7 +5,7 @@ using System.IO;
 
 namespace COSC3337_FinalProject
 {
-    class BookRecords
+    class BookRecords //Stores records in a file by RNN with two indicies
     {
         public const int tableSize = 1000;
 
@@ -53,6 +53,13 @@ namespace COSC3337_FinalProject
 
         public void Add(Record record) //Add a new record
         {
+            //Check Record doesn't Exist
+            if (titleIndex.Search(record.title) >= 0 | isbnIndex.Search(record.isbn) >= 0)
+            {
+                Console.WriteLine("Error: Duplicate Record");
+                return;
+            }
+
             int index = 0; 
             if (availList.Count > 0) //Check if Avail has record
             {
@@ -66,6 +73,7 @@ namespace COSC3337_FinalProject
                 {
                     index++;
                 }
+                lastIndex = index;
             }
 
             //Write Record
@@ -101,6 +109,13 @@ namespace COSC3337_FinalProject
 
         public bool Update(int index, Record record)
         {
+            //Check updated Record doesn't Exist
+            if (titleIndex.Search(record.title) >= 0 | isbnIndex.Search(record.isbn) >= 0)
+            {
+                Console.WriteLine("Error: Duplicate Record");
+                return false;
+            }
+
             Record upRec;
             if (GetRecord(index, out upRec))
             {

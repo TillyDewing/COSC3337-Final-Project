@@ -11,7 +11,7 @@ namespace COSC3337_FinalProject
         {
             
             Console.WriteLine("Welcome Tilly's Library System:");
-            Console.WriteLine("---------------------------------------------------------------");
+            Console.WriteLine("-----------------------------------------------------------------------------------");
 
             bool run = true;
             while (run)
@@ -39,6 +39,7 @@ namespace COSC3337_FinalProject
                 {
                     run = false;
                 }
+                Console.WriteLine("-----------------------------------------------------------------------------------");
             }
 
         }
@@ -82,6 +83,7 @@ namespace COSC3337_FinalProject
             Record record = new Record(author, title, isbn);
 
             records.Update(index, record);
+            Console.WriteLine("Record Updated!");
         }
 
         private static int Search()
